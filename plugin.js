@@ -16,23 +16,24 @@ internals.factory = function (options) {
 
   function bearerAuthHook (fastifyReq, fastifyRes, next) {
     const header = fastifyReq.req.headers['authorization']
-    if (!header) {
-      const noHeaderError = Error('missing authorization header')
-      fastifyReq.log.error('unauthorized: %s', noHeaderError.message)
-      if (contentType) fastifyRes.header('content-type', contentType)
-      fastifyRes.code(401).send(errorResponse(noHeaderError))
-      return
-    }
+    if (fastifyReq.req.method !== 'OPTIONS') {
+      if (!header) {
+        const noHeaderError = Error('missing authorization header')
+        fastifyReq.log.error('unauthorized: %s', noHeaderError.message)
+        if (contentType) fastifyRes.header('content-type', contentType)
+        fastifyRes.code(401).send(errorResponse(noHeaderError))
+        return
+      }
 
-    const key = header.substring(6).trim()
-    if (keys.has(key) === false) {
-      const invalidKeyError = Error('invalid authorization header')
-      fastifyReq.log.error('invalid authorization header: `%s`', header)
-      if (contentType) fastifyRes.header('content-type', contentType)
-      fastifyRes.code(401).send(errorResponse(invalidKeyError))
-      return
+      const key = header.substring(6).trim()
+      if (keys.has(key) === false) {
+        const invalidKeyError = Error('invalid authorization header')
+        fastifyReq.log.error('invalid authorization header: `%s`', header)
+        if (contentType) fastifyRes.header('content-type', contentType)
+        fastifyRes.code(401).send(errorResponse(invalidKeyError))
+        return
+      }
     }
-
     next()
   }
 
